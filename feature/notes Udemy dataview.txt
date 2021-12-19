@@ -1,0 +1,318 @@
+dataview is function programming language which looks like json.
+
+we can write varibles and functions in header part too.
+
+{}  - represnt object
+[] - represent type array list.
+
+var number=["one","two",3]   - this is variable number which represented array.
+
+object is value key pair 
+object can be in variable  like 
+var object1 {one : 1 , two: 2 , }   --  object1
+below ---  line
+just mention number  -  it will give the output at preview tab.
+
+when you want to construct a new object with existant object then use ().
+ex: {(object1)}--you can always try how it work
+
+++   -  for concatanation
++   - (adding) is add another element as object in array 
+
+array + object -  possible   but array ++ object not possible.
+reverse doesnt work   -   object + array  and object ++ array
+
+object 1 + object2 -  not possible
+object1 ++ object 2 -  isn possible.
+
+-  -> substraction 
+example = object 1 ++ object2 - "two"    :  we canuse many ways this expression  as (object1 ++ object2 -  two)  and many more 
+when we use '-' then mention key with value got removed. means only key need to match but when we use "--" , both key/value needs to be match.
+for "--"  - above not work 
+to work  we have to mention = object 1 ++ object2 -- "two: 2"
+
+====================================================
+combine 2 arrays  , means if you want array of arrays then use zip  means we have arrays equal to value matched in array.
+countries zip capitals
+also we can do it as , zip(countries,capitals)
+
+flatten - is a function which make multiple array into 1 array 
+flatten(zip(countries,capitals))
+unzip(zip(countries,capitals))  - it will reverse of zip....it will have 2 arrays inside 1 but as seperated.
+
+===================================
+
+{} product.json  - how we create this in main/resource  ==  it is input metadata which we used for transform module.
+means i know we create it in our own system and then select that,,but i saqw one video where it was already present in one project main/resource
+then they copied to other project where we wanted it and name was like that.
+
+where we use set variables in dataview - that we created un transform
+do we have to call those independent varible in our payload expression ????  and how we do it -  i guess var.name
+
+write a attribute to xml - is nothing but mentioning the value at same level as root value.
+ex :  product @(pid: payload.productid) :{}
+
+when we want some computation or change in data then we can use function - we can define this function in header part with 2 arguments
+fun getofferprice(price , discountpercentage)= price*(100-dicountpercentage)/100.
+
+datawieve is functional programming lang so we can actually create a variable pointing to function also -  in the header
+so how to define function as variable -  var vgetofferprice = (price , discountpercentage) -> price*(100-dicountpercentage)/100.
+
+->  this sign is for we are calling or using function which have no name for variable.
+
+how to call those function and variable in main body means in payload -
+offerprice: getofferprice(payload.originalprice,payload.offer.discountpercentage)    - herewe have payload.offer because it is nested field.
+offerprice: vgetofferprice(payload.originalprice,payload.offer.discountpercentage)
+
+we created var  - is the dataview varibles  but we created set variable - they are not datview variable they are mule event variable.
+
+************************************
+one major doubt -  when we post the data , http listner - we transform the data in form we want
+so the transformed data get posted right ----------
+**************************************
+
+============================================================================
+
+how to create reuseable custome module in dataview - we can cretaed custome module by coping our functions or variable in it
+for thisw eneed to create folder in resources thyen inside that create new file.dwl and copy function and variable in that file.
+
+so how can we used this in our body as by importing
+ex : import * from mymodules::customemodules  , if we remove the * then we have to modulename::
+offerprice: customemodules::getofferprice(payload.originalprice,payload.offer.discountpercentage)  but if we are using * from then no need to do that.
+
+we can also use alias namimg for function/variables 
+ex : import fetofferprice as gop from mymodules::customemodules
+offerprice: gop(payload.originalprice,payload.offer.discountpercentage)
+
+
+import :: core  -  is bydefault present
+others we have to mention so we can use the function which are present in those modules - like
+import::core::Strings
+
+then in body write like = String::camelize(payload.name)
+
+**************
+we can able to pass one function as argument to another function in dataview - --- it sis there on statinng   but need more real time example
+ex = fun formatdata(myinput, formatter) = formatter(myinput)
+----
+formatdata("rajeshtoraskar",lower)
+"rajeshtoraskar" formatdata lower
+
+we can also pass type in function arguments
+fun formatdata(myinput:String, formatter : ()String) -> string) = formatter(myinput)
+
+***************
+
+how to chain function - [1,2,3,4,5] filter $>2 ordered by $  -  it will give [3,4,5]
+[1,2,3,4,5] filter $>2   -  it will give [3,4,5]
+
+to chain function we need to have function which have 2 arguments , if function have 1 argumenmt we cant chain that.
+we cannot write rajeshtoraskar lower ..... so make this possible we will create our own custome function and then used it
+ex - fun chain(myinpit , myfunction) = myfunction(myinput)
+---
+"rajeshtoraskar" chain lower  -  it will work
+
+now use the same as above to anynomous function - 
+{"one" : 1 . "two" : 2} chain (x) -> x.one ++ "" ++ x.two  -  it will work
+upper({"one" : 1 . "two" : 2} chain (x) -> x.one ++ "" ++ x.two) it is same as below 
+{"one" : 1 . "two" : 2} chain (x) -> x.one ++ "" ++ x.two chain upper
+
+above is also similar to = 
+Chain ( chain({"one" : 1 . "two" : 2}, (x) -> x.one ++ "" ++ x.two), upper)
+
+******************************
+major doubt --  then upper(lower(Rajesh)  it is not chanin function  as there is only one argument
+
+
+or it is chain function when we call function as argument in other function  --  have doubt.
+**********************************
+============================================================
+
+where we usec CData   --    no idea --  character data and when we want value inside the character data then we used --- but still why----
+
+all datatypes are defined in dw::core
+various native datatype -  array , Cdata , date , datetime , localtime , localdatetime , period, time , timezone
+now()
+today: now() as Date as String {format:"mm-dd"}   it is same as today: now() as String {format:"mm-dd"} 
+
+upper bound type -   it is used when we have date time which is used in 10 places and we have to make changes at 10 places
+inplace of this we can create 1 type function and make changes there and then we can use it everywhere.
+eg - mydateformat= String {format:"mm-dd"}
+today: now() as mydateformat
+
+**************
+need more info on "type" in dataview -------
+***********
+
+Defining namespace for xml - need more example and details about this , why we used it -------------------- need more
+ns myns http://www.way2learnonline.com/mytypes
+
+we can used with root xml value
+{
+myns#users:
+{}}
+
+
+this is xml wehre they have namespace = <way2learn:products xmlns:way2learn="http">
+
+in dw it is same as = 
+do{ ns way2learn http
+---
+{way2learn#products:{
+product @(productid :"1"):{
+
+
+
+na,espace is mostly belongs to root tag ----  need to confirm 
+============================================================
+
+
+what is dataview selectors - -----  types of selectors
+single value selector  = .keyname
+multivalue selector  = .*keyname
+descendant selector = ..keyname
+indexed selector = [keyname]
+key value pair selector = .&keyname
+range selector = [index to index]
+xml attribute selctor = @,.@keyname
+key/xml attribute present selector = keyname? , keyname.@type?
+filter selectors = [?(boolean expression)]
+
+<way2learn:products xmlns:way2learn="http">
+ <product productid="1">
+
+do{ ns way2learn http                - do{, it is there while converting xml to Dw
+---
+{way2learn#products:{
+product @(productid :"1"):{
+
+
+we can also read any file which is there in resource instead of creating metadata with it =
+how to do it = var productsxml= readUrl("classpath://examples/products.xml","application/xml")
+---
+productsxml   -  we can see the whole file in output/preview
+
+
+***********************************************************************************************
+var productsxml= readUrl("classpath://examples/products.xml","application/xml")
+var products= productxml.products.*product
+fun getallproductname()= products.name
+
+---
+getallproductname()                --- all the function /variable declare above"---" is global in nature so ...any function can use ,
+ scope  of the variable is for whole transformation
+
+...in given function if want to use any variable we dont have to define this in function as argument .
+
+if we want use local variable/private varible which has use scope only for that function only.
+ex - 
+var productsxml= readUrl("classpath://examples/products.xml","application/xml")
+fun getallproductname()=
+do{
+var products= productxml.products.*product
+---
+products.name
+}
+---
+getallproductname()
+
+
+another ex - 
+
+fun getallproductname(filename:String)=
+do{
+var productsxml= readUrl(filename,"application/xml")
+var products= productxml.products.*product
+---
+products.name
+}
+---
+getallproductname("classpath://examples/products.xml")
+**************************************************************
+
+productsXml.product.#  -  it give the namespace 
+# - represent namespace object    ,  namespace  - is datatype in dataview
+
+var productsxml= readUrl("classpath://examples/products.xml","application/xml")
+var products= productxml.products.*product
+var myns= productsXml.product.#.url
+---
+myns#products:{(products)}  -  it is sysntax to apply namespace is #  -  this how we can apply namespace to xml
+
+myns#products:{                - it is for selecting value for arguments with namespace
+ids:products.@productid}
+
+
+productxml.products.*product.*productsid  -- same as = products.*productsid
+
+
+productxml..   -  descendant selector
+sizeof(productsXml..) -- give the total number of key-value pair in descendant form
+
+another example --------
+var productsxml= readUrl("classpath://examples/products.xml","application/xml")
+var products= productxml.products.*product
+var myns= productsXml.product.#.url
+
+var obj={firstname:"raj",lastname:"tor"}
+---
+user:{}
+user:obj.firstname
+user:obj.&firstname   -  it is key value selector
+productsxml.products
+productsxml.&products
+
+
+products.name?  -   ? is the operator which check the existance of the expression. , $  is operator pointing at current value
+products[?($.brandname=="hp")]   -   syntax for filter ...condition met then need output apply then it is very useful
+
+======================================================================================
+
+
+
+
+
+
+
+
+
+====================================================================================
+
+what is while coverting all the key to upper we dont need product as it is extra field added just so we can call array as function
+ex - covertkeyupper(product:{(products)})   --   how can we not have extra product but meet the requirement.
+
+
+===============================
+
+recursion - function calling itself is called as recursion.
+tail recursion --  explained in dataview udemy course
+
+=================================
+
+reduce function in mule is based on tail recursion
+
+===================================
+
+how to make array of data in simple data in dataview
+
+also when we use dw:: arrays
+ex :  Arrays::every (products , product) -> product.originalprice <=5000    - it will give us value less than 5000 but how can i get filed name also with it
+also output we get is in array , what if i want that data in simple form.......
+
+
+log function  when we used we can see the logs in console , how we can see this in as output in postman or store in any file.----
+
+in transform output part - it is alwayd poiny to output payload but we can also create variable through it -- where we use them or hoe it work----
+also we can create attributes -- where we use and how we use------------need example atleast--------------
+main doubt id..we create varible and when we call the endpoint does it also work with the payload that we transform ---
+
+
+when we transorm data from sxm/json to csv,xlsx  -  how it done means what will be the data styructure like------------
+
+can we do xml to csv --
+
+also when we covert xlsx file to xml ---  while creating metadata do we have to create field manually as per in xlsx sheet or we can have it loaded 
+directly...   doubt occure because od   , video no = 57  n by chinna mule 4x.
+
+
+what is inbound and outbound http request---
